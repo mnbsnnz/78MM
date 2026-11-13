@@ -3,13 +3,20 @@
 const modes={},answers={},checked={},finished={};
 const letters='ABCDE';
 for(let ch=1;ch<=23;ch++){modes[ch]='quiz';answers[ch]={};checked[ch]={};finished[ch]=false;}
-function selectMode(ch,m){modes[ch]=m;answers[ch]={};checked[ch]={};finished[ch]=false;document.getElementById('result'+ch).innerHTML='';document.getElementById('quiz'+ch).classList.toggle('active',m==='quiz');document.getElementById('test'+ch).classList.toggle('active',m==='test');document.getElementById('help'+ch).textContent=m==='quiz'?'Жауапты таңдағаннан кейін дұрыс нұсқа бірден көрсетіледі.':'Барлық сұраққа жауап беріңіз. Дұрыс жауаптар нәтиже көрсетілгенде ашылады.';render(ch);}
+function selectMode(ch,m){modes[ch]=m;answers[ch]={};checked[ch]={};finished[ch]=false;document.getElementById('result'+ch).innerHTML='';document.getElementById('quiz'+ch).classList.toggle('active',m==='quiz');document.getElementById('test'+ch).classList.toggle('active',m==='test');document.getElementById('help'+ch).textContent=m==='quiz'?'Жауапты таңдағаннан кейін дұрыс нұсқа бірден көрсетіледі.':'Жауап бермесеңіз де «Нәтижені көрсету» батырмасын басуға болады. Барлық дұрыс жауаптар жасыл түспен ашылады.';render(ch);}
 function render(ch){const qs=banks[ch]||[];const m=modes[ch];const a=answers[ch],c=checked[ch];const list=document.getElementById('questions'+ch);
-list.innerHTML=qs.map((q,i)=>{const revealed=!!c[i]||finished[ch];return `<article class="q" id="q${ch}_${i}"><div class="qtitle">${i+1}. ${q[0]}</div>${q[1].map((option,j)=>`<label class="opt ${revealed&&j===q[2]?'correct':''} ${revealed&&a[i]===j&&j!==q[2]?'wrong':''} ${revealed?'locked':''}"><input type="radio" name="q${ch}_${i}" value="${j}" ${a[i]===j?'checked':''} ${revealed?'disabled':''} onchange="choose(${ch},${i},${j})"><span>${letters[j]}) ${option}</span></label>`).join('')}${revealed&&m==='quiz'?`<div class="explain"><b>${a[i]===q[2]?'Дұрыс жауап':'Қате жауап'} · ${letters[q[2]]}) ${q[1][q[2]]}</b>${q[3]}</div>`:''}</article>`}).join('');
+list.innerHTML=qs.map((q,i)=>{const revealed=!!c[i]||finished[ch];return `<article class="q" id="q${ch}_${i}"><div class="qtitle">${i+1}. ${q[0]}</div>${q[1].map((option,j)=>`<label class="opt ${revealed&&j===q[2]?'correct':''} ${revealed&&a[i]===j&&j!==q[2]?'wrong':''} ${revealed?'locked':''}"><input type="radio" name="q${ch}_${i}" value="${j}" ${a[i]===j?'checked':''} ${revealed?'disabled':''} onchange="choose(${ch},${i},${j})"><span>${letters[j]}) ${option}</span></label>`).join('')}${revealed&&m==='quiz'?`<div class="explain"><b>${a[i]===undefined?'Дұрыс жауап':a[i]===q[2]?'Дұрыс жауап':'Қате жауап'} · ${letters[q[2]]}) ${q[1][q[2]]}</b>${q[3]}</div>`:''}</article>`}).join('');
 const count=Object.keys(a).length;document.getElementById('progress'+ch).textContent=`Жауап берілді: ${count} / ${qs.length}`;}
 function choose(ch,i,j){if(checked[ch][i]||finished[ch])return;answers[ch][i]=j;if(modes[ch]==='quiz')checked[ch][i]=true;document.getElementById('result'+ch).innerHTML='';render(ch);}
-function result(ch){const qs=banks[ch]||[],a=answers[ch];const count=Object.keys(a).length;if(count<qs.length){document.getElementById('result'+ch).innerHTML=`<div class="explain">Алдымен қалған ${qs.length-count} сұраққа жауап беріңіз.</div>`;document.getElementById('result'+ch).scrollIntoView({behavior:'smooth',block:'center'});return;}
-const score=qs.filter((q,i)=>a[i]===q[2]).length;finished[ch]=true;render(ch);document.getElementById('result'+ch).innerHTML=`<div class="score">Нәтиже: ${score} / ${qs.length} (${Math.round(score/qs.length*100)}%)</div>`+(modes[ch]==='test'?`<div class="result-list">${qs.map((q,i)=>`<div class="result-line"><b>${i+1}. ${a[i]===q[2]?'Дұрыс':'Қате'}</b> · ${letters[q[2]]}) ${q[1][q[2]]}<div>${q[3]}</div></div>`).join('')}</div>`:'');document.getElementById('result'+ch).scrollIntoView({behavior:'smooth',block:'center'});}
+function result(ch){
+const qs=banks[ch]||[],a=answers[ch];
+const score=qs.filter((q,i)=>a[i]===q[2]).length;
+const answered=Object.keys(a).length;
+finished[ch]=true;
+render(ch);
+document.getElementById('result'+ch).innerHTML=`<div class="score">Нәтиже: ${score} / ${qs.length} (${qs.length?Math.round(score/qs.length*100):0}%) · Жауап берілді: ${answered} / ${qs.length}</div>`+(modes[ch]==='test'?`<div class="result-list">${qs.map((q,i)=>`<div class="result-line"><b>${i+1}. ${a[i]===undefined?'Жауап берілмеді':a[i]===q[2]?'Дұрыс':'Қате'}</b> · ${letters[q[2]]}) ${q[1][q[2]]}<div>${q[3]}</div></div>`).join('')}</div>`:'');
+document.getElementById('result'+ch).scrollIntoView({behavior:'smooth',block:'center'});
+}
 function reset(ch){answers[ch]={};checked[ch]={};finished[ch]=false;document.getElementById('result'+ch).innerHTML='';render(ch);document.getElementById('questions'+ch).scrollIntoView({behavior:'smooth',block:'start'});}
 for(let ch=1;ch<=23;ch++)render(ch);
 </script></body></html>
